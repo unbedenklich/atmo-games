@@ -2,7 +2,7 @@ import { base } from '$app/paths';
 import type { ConnectionsPuzzle } from './types';
 
 export const START_DATE = '2026-01-01';
-export const TOTAL_PUZZLES = 110;
+export const TOTAL_PUZZLES = 113;
 
 export function getTodayPuzzleNumber(): number {
 	const now = new Date();

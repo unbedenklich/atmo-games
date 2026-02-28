@@ -1,0 +1,8 @@
+{
+  "groups": [
+    { "category": "Fix something", "words": ["OVERHAUL", "REPAIR", "MEND", "PATCH"], "difficulty": 0 },
+    { "category": "Holy ___", "words": ["SMOKES", "MOLY", "NIGHT", "WATER"], "difficulty": 1 },
+    { "category": "Human bones", "words": ["CAPITATE", "TALUS", "HYOID", "HAMMER"], "difficulty": 2 },
+    { "category": "Transportation vehicles with the first letter replaced by a different letter", "words": ["HIKE", "FAR", "FLANE", "SUS"], "difficulty": 3 }
+  ]
+}

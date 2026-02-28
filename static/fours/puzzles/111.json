@@ -1,0 +1,44 @@
+{
+  "groups": [
+    {
+      "category": "___ an application",
+      "words": [
+        "RUN",
+        "OPEN",
+        "EXECUTE",
+        "LAUNCH"
+      ],
+      "difficulty": 0
+    },
+    {
+      "category": "New ___",
+      "words": [
+        "YORK",
+        "YEAR",
+        "ZEALAND",
+        "ORLEANS"
+      ],
+      "difficulty": 1
+    },
+    {
+      "category": "Computer science units",
+      "words": [
+        "BOOL",
+        "FLOAT",
+        "DICT",
+        "STRUCT"
+      ],
+      "difficulty": 2
+    },
+    {
+      "category": "Color + S",
+      "words": [
+        "BLUES",
+        "AMBERS",
+        "TEALS",
+        "INDIGOS"
+      ],
+      "difficulty": 3
+    }
+  ]
+}
