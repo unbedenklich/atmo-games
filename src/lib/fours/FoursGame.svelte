@@ -2,13 +2,17 @@
 	import { dev } from '$app/environment';
 	import { flip } from 'svelte/animate';
 	import { fade } from 'svelte/transition';
-	import { ConnectionsGame, DIFFICULTY_COLORS } from './game.svelte';
-	import type { ConnectionsPuzzle } from './types';
+	import { FoursGame, DIFFICULTY_COLORS } from './game.svelte';
+	import type { FoursPuzzle, FoursScore } from './types';
 
-	const { puzzle, puzzleId }: { puzzle: ConnectionsPuzzle; puzzleId: number } = $props();
+	const {
+		puzzle,
+		score,
+		shuffledWords
+	}: { puzzle: FoursPuzzle; score?: FoursScore; shuffledWords?: string[] } = $props();
 
 	// svelte-ignore state_referenced_locally
-	const game = new ConnectionsGame(puzzle, puzzleId);
+	const game = new FoursGame(puzzle, { score, shuffledWords });
 </script>
 
 <div class="relative flex w-full flex-col gap-4 px-2 py-4 sm:px-4">

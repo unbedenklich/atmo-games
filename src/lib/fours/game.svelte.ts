@@ -1,5 +1,5 @@
 import { getMillisUntilMidnight } from './daily';
-import type { ConnectionsGroup, ConnectionsPuzzle } from './types';
+import type { FoursGroup, FoursPuzzle, FoursScore } from './types';
 
 export const DIFFICULTY_COLORS = [
 	'bg-yellow-400 dark:bg-yellow-600 text-stone-900 dark:text-stone-100',
@@ -21,20 +21,21 @@ function delay(ms: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export class ConnectionsGame {
+export class FoursGame {
 	shuffledWords: string[] = $state([]);
 	selectedWords: string[] = $state([]);
-	solvedGroups: ConnectionsGroup[] = $state([]);
+	solvedGroups: FoursGroup[] = $state([]);
 	mistakes: number = $state(0);
 	gameState: 'playing' | 'won' | 'lost' = $state('playing');
 	feedback: string | null = $state(null);
 	shakingWords: string[] = $state([]);
 	bouncingWords: string[] = $state([]);
 	coloringWords: string[] = $state([]);
-	coloringGroup: ConnectionsGroup | null = $state(null);
+	coloringGroup: FoursGroup | null = $state(null);
 	isSubmitting: boolean = $state(false);
 	countdown: string = $state('');
 	hintWords: Map<string, number> = $state(new Map());
+	guesses: [string, string, string, string][] = $state([]);
 
 	get remainingWords(): string[] {
 		return this.shuffledWords.filter(
@@ -42,24 +43,29 @@ export class ConnectionsGame {
 		);
 	}
 
+	get score(): FoursScore {
+		return {
+			guesses: this.guesses,
+			won: this.gameState === 'won'
+		};
+	}
+
 	constructor(
-		private puzzle: ConnectionsPuzzle,
-		private puzzleId: number
+		private puzzle: FoursPuzzle,
+		options?: { score?: FoursScore; shuffledWords?: string[] }
 	) {
-		$effect(() => {
-			if (!this.loadSavedGame()) {
-				this.initGame();
-			}
-		});
+		if (options?.score) {
+			this.restoreFromScore(options.score);
+		} else {
+			this.initGame(options?.shuffledWords);
+		}
 
 		$effect(() => {
 			if (this.gameState !== 'playing') {
 				const update = () => {
 					const ms = getMillisUntilMidnight();
 					if (ms <= 0) {
-						if (!this.loadSavedGame()) {
-							this.initGame();
-						}
+						this.initGame();
 						return;
 					}
 					const h = Math.floor(ms / 3600000);
@@ -74,9 +80,46 @@ export class ConnectionsGame {
 		});
 	}
 
-	initGame() {
+	private restoreFromScore(score: FoursScore) {
+		// Replay guesses to reconstruct solved state
+		const solvedGroups: FoursGroup[] = [];
+		let mistakes = 0;
+
+		for (const guess of score.guesses) {
+			const matchedGroup = this.puzzle.groups.find(
+				(group) =>
+					!solvedGroups.includes(group) &&
+					guess.every((w) => group.words.includes(w as never))
+			);
+			if (matchedGroup) {
+				solvedGroups.push(matchedGroup);
+			} else {
+				mistakes++;
+			}
+		}
+
+		this.solvedGroups = solvedGroups.sort((a, b) => a.difficulty - b.difficulty);
+		this.mistakes = mistakes;
+		this.guesses = [...score.guesses];
+		this.gameState = score.won ? 'won' : mistakes >= 4 ? 'lost' : 'playing';
+		this.shuffledWords = this.puzzle.groups.flatMap((g) => g.words);
+		this.selectedWords = [];
+		this.shakingWords = [];
+		this.bouncingWords = [];
+		this.coloringWords = [];
+		this.coloringGroup = null;
+		this.isSubmitting = false;
+		this.feedback = null;
+
+		if (this.gameState === 'lost') {
+			// Show all groups as solved when lost
+			this.solvedGroups = [...this.puzzle.groups].sort((a, b) => a.difficulty - b.difficulty);
+		}
+	}
+
+	initGame(preShuffled?: string[]) {
 		const allWords = this.puzzle.groups.flatMap((g) => g.words);
-		this.shuffledWords = shuffle(allWords);
+		this.shuffledWords = preShuffled ?? shuffle(allWords);
 		this.selectedWords = [];
 		this.solvedGroups = [];
 		this.mistakes = 0;
@@ -87,6 +130,7 @@ export class ConnectionsGame {
 		this.coloringWords = [];
 		this.coloringGroup = null;
 		this.isSubmitting = false;
+		this.guesses = [];
 	}
 
 	toggleWord(word: string) {
@@ -106,6 +150,9 @@ export class ConnectionsGame {
 	async submitGuess() {
 		if (this.selectedWords.length !== 4 || this.gameState !== 'playing' || this.isSubmitting)
 			return;
+
+		// Record the guess
+		this.guesses = [...this.guesses, [...this.selectedWords] as [string, string, string, string]];
 
 		const matchedGroup = this.puzzle.groups.find(
 			(group) =>
@@ -144,7 +191,6 @@ export class ConnectionsGame {
 
 			if (this.solvedGroups.length === 4) {
 				this.gameState = 'won';
-				this.saveCompletion();
 			}
 		} else {
 			const almostGroup = this.puzzle.groups.find(
@@ -179,7 +225,6 @@ export class ConnectionsGame {
 					if (i === unsolved.length - 1) {
 						this.gameState = 'lost';
 						this.isSubmitting = false;
-						this.saveCompletion();
 					}
 				});
 			} else {
@@ -229,36 +274,7 @@ export class ConnectionsGame {
 		return bounceIdx >= 0 ? `animation-delay: ${bounceIdx * 100}ms;` : '';
 	}
 
-	private saveCompletion() {
-		const key = `connections-${this.puzzleId}`;
-		localStorage.setItem(key, JSON.stringify({ state: this.gameState, mistakes: this.mistakes }));
-	}
-
-	private loadSavedGame(): boolean {
-		try {
-			const key = `connections-${this.puzzleId}`;
-			const saved = localStorage.getItem(key);
-			if (!saved) return false;
-			const data = JSON.parse(saved);
-			this.gameState = data.state;
-			this.mistakes = data.mistakes;
-			this.solvedGroups = [...this.puzzle.groups].sort((a, b) => a.difficulty - b.difficulty);
-			this.shuffledWords = this.puzzle.groups.flatMap((g) => g.words);
-			this.selectedWords = [];
-			this.shakingWords = [];
-			this.bouncingWords = [];
-			this.coloringWords = [];
-			this.coloringGroup = null;
-			this.isSubmitting = false;
-			this.feedback = null;
-			return true;
-		} catch {
-			return false;
-		}
-	}
-
 	reset() {
-		localStorage.removeItem(`connections-${this.puzzleId}`);
 		this.initGame();
 	}
 }

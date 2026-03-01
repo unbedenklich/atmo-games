@@ -1,0 +1,13 @@
+{
+	"name": "atmo-games",
+	"compatibility_date": "2025-01-01",
+	"compatibility_flags": ["nodejs_compat_v2"],
+	// Set OAUTH_PUBLIC_URL to your production domain when deploying
+	// "vars": {
+	// 	"OAUTH_PUBLIC_URL": "https://your-domain.com"
+	// },
+	"kv_namespaces": [
+		{ "binding": "OAUTH_SESSIONS", "id": "TODO" },
+		{ "binding": "OAUTH_STATES", "id": "TODO" }
+	]
+}
