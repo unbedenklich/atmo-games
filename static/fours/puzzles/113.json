@@ -1,0 +1,44 @@
+{
+  "groups": [
+    {
+      "category": "Oh my ___",
+      "words": [
+        "GOD",
+        "GOODNESS",
+        "DAMN",
+        "LANTA"
+      ],
+      "difficulty": 0
+    },
+    {
+      "category": "Spongebob",
+      "words": [
+        "TIE",
+        "PANTS",
+        "HAT",
+        "SPONGE"
+      ],
+      "difficulty": 1
+    },
+    {
+      "category": "Memes",
+      "words": [
+        "DOGE",
+        "PEPE",
+        "NYAN",
+        "SUS"
+      ],
+      "difficulty": 2
+    },
+    {
+      "category": "Words for penis",
+      "words": [
+        "DONG",
+        "ROD",
+        "JOHNSON",
+        "WANG"
+      ],
+      "difficulty": 3
+    }
+  ]
+}

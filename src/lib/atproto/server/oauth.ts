@@ -1,0 +1,92 @@
+import {
+	OAuthClient,
+	MemoryStore,
+	type ClientAssertionPrivateJwk,
+	type OAuthClientStores,
+	type OAuthSession,
+	type StoredSession,
+	type StoredState
+} from '@atcute/oauth-node-client';
+import type { Did } from '@atcute/lexicons';
+import {
+	CompositeDidDocumentResolver,
+	CompositeHandleResolver,
+	DohJsonHandleResolver,
+	LocalActorResolver,
+	PlcDidDocumentResolver,
+	WebDidDocumentResolver,
+	WellKnownHandleResolver
+} from '@atcute/identity-resolver';
+import { KVStore } from './kv-store';
+import { DOH_RESOLVER, REDIRECT_PATH } from '../settings';
+import { scope } from '../metadata';
+import { dev } from '$app/environment';
+
+function createActorResolver() {
+	return new LocalActorResolver({
+		handleResolver: new CompositeHandleResolver({
+			methods: {
+				dns: new DohJsonHandleResolver({ dohUrl: DOH_RESOLVER }),
+				http: new WellKnownHandleResolver()
+			}
+		}),
+		didDocumentResolver: new CompositeDidDocumentResolver({
+			methods: {
+				plc: new PlcDidDocumentResolver(),
+				web: new WebDidDocumentResolver()
+			}
+		})
+	});
+}
+
+function createStores(env?: App.Platform['env']): OAuthClientStores {
+	if (env?.OAUTH_SESSIONS && env?.OAUTH_STATES) {
+		return {
+			sessions: new KVStore<Did, StoredSession>(env.OAUTH_SESSIONS),
+			states: new KVStore<string, StoredState>(env.OAUTH_STATES, { expirationTtl: 600 })
+		};
+	}
+	return {
+		sessions: new MemoryStore<Did, StoredSession>(),
+		states: new MemoryStore<string, StoredState>({ ttl: 600_000 })
+	};
+}
+
+export function createOAuthClient(env?: App.Platform['env']): OAuthClient {
+	const actorResolver = createActorResolver();
+	const stores = createStores(env);
+
+	if (dev && !env?.OAUTH_PUBLIC_URL) {
+		return new OAuthClient({
+			metadata: {
+				redirect_uris: [`http://127.0.0.1:5183${REDIRECT_PATH}`],
+				scope
+			},
+			actorResolver,
+			stores
+		});
+	}
+
+	if (!env?.OAUTH_PUBLIC_URL) {
+		throw new Error('OAUTH_PUBLIC_URL is not set');
+	}
+	if (!env.CLIENT_ASSERTION_KEY) {
+		throw new Error('CLIENT_ASSERTION_KEY secret is not set. Run: pnpm env:generate-key');
+	}
+	const site = env.OAUTH_PUBLIC_URL;
+	const key: ClientAssertionPrivateJwk = JSON.parse(env.CLIENT_ASSERTION_KEY);
+
+	return new OAuthClient({
+		metadata: {
+			client_id: site + '/oauth-client-metadata.json',
+			redirect_uris: [site + REDIRECT_PATH],
+			scope,
+			jwks_uri: site + '/oauth/jwks.json'
+		},
+		keyset: [key],
+		actorResolver,
+		stores
+	});
+}
+
+export type { OAuthSession };

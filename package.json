@@ -1,5 +1,5 @@
 {
-	"name": "svelte-atproto-client-oauth",
+	"name": "atmo-games",
 	"private": true,
 	"version": "0.1.0",
 	"type": "module",
@@ -11,20 +11,24 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",
-		"lint": "prettier --check . && eslint ."
+		"lint": "prettier --check . && eslint .",
+		"env:generate-key": "npx tsx src/lib/atproto/scripts/generate-key.ts",
+		"env:generate-secret": "npx tsx src/lib/atproto/scripts/generate-secret.ts",
+		"env:setup-dev": "npx tsx src/lib/atproto/scripts/setup-dev.ts"
 	},
 	"devDependencies": {
 		"@atcute/atproto": "^3.1.10",
-		"@atcute/bluesky": "^3.2.15",
+		"@atcute/bluesky": "^3.2.19",
 		"@atcute/client": "^4.2.1",
 		"@atcute/identity-resolver": "^1.2.2",
-		"@atcute/lexicons": "^1.2.6",
-		"@atcute/oauth-browser-client": "^2.0.3",
-		"@atcute/tid": "^1.1.1",
+		"@atcute/lexicons": "^1.2.9",
+		"@atcute/oauth-node-client": "^1.1.0",
+		"@atcute/tid": "^1.1.2",
+		"@cloudflare/workers-types": "^4.20260301.1",
 		"@eslint/compat": "^2.0.1",
 		"@eslint/js": "^9.39.2",
 		"@sveltejs/adapter-auto": "^7.0.0",
-		"@sveltejs/adapter-static": "^3.0.10",
+		"@sveltejs/adapter-cloudflare": "^7.2.8",
 		"@sveltejs/kit": "^2.50.0",
 		"@sveltejs/vite-plugin-svelte": "^6.2.4",
 		"@tailwindcss/forms": "^0.5.11",
@@ -40,12 +44,15 @@
 		"svelte": "^5.48.0",
 		"svelte-check": "^4.3.5",
 		"tailwindcss": "^4.1.18",
+		"tsx": "^4.21.0",
 		"typescript": "^5.9.3",
 		"typescript-eslint": "^8.53.1",
 		"vite": "^7.3.1"
 	},
 	"license": "MIT",
 	"dependencies": {
-		"@foxui/core": "^0.4.7"
+		"@foxui/core": "^0.4.7",
+		"@foxui/social": "^0.5.1",
+		"valibot": "^1.2.0"
 	}
 }
