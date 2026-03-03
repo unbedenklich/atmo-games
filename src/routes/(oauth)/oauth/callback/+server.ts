@@ -22,5 +22,5 @@ export const GET: RequestHandler = async ({ url, platform, cookies }) => {
 		redirect(303, '/?error=auth_failed');
 	}
 
-	redirect(303, '/fours/sync');
+	redirect(303, '/');
 };

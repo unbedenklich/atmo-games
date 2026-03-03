@@ -21,6 +21,7 @@ import { KVStore } from './kv-store';
 import { DOH_RESOLVER, REDIRECT_PATH } from '../settings';
 import { scope } from '../metadata';
 import { dev } from '$app/environment';
+import { DEV_PORT } from '../port';
 
 function createActorResolver() {
 	return new LocalActorResolver({
@@ -59,7 +60,7 @@ export function createOAuthClient(env?: App.Platform['env']): OAuthClient {
 	if (dev && !env?.OAUTH_PUBLIC_URL) {
 		return new OAuthClient({
 			metadata: {
-				redirect_uris: [`http://127.0.0.1:5183${REDIRECT_PATH}`],
+				redirect_uris: [`http://127.0.0.1:${DEV_PORT}}${REDIRECT_PATH}`],
 				scope
 			},
 			actorResolver,

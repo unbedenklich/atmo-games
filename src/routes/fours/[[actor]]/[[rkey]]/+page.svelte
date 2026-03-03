@@ -39,10 +39,10 @@
 
 <div class="flex min-h-svh flex-col items-center justify-center p-4">
 	<div class="mb-4 flex flex-col items-center">
-		<h1 class="flex items-center gap-2 text-2xl font-bold text-stone-800 dark:text-stone-200">
+		<h1 class="flex items-center gap-2 text-2xl font-bold text-base-800 dark:text-base-200">
 			Fours by <Avatar src={avatar} alt={handle} class="size-8" /> {handle}
 		</h1>
-		<span class="mt-1 text-xs text-stone-400 dark:text-stone-500">
+		<span class="mt-1 text-xs text-base-400 dark:text-base-500">
 			{#if puzzleIndex != null && puzzleCount != null}
 				puzzle {puzzleIndex}/{puzzleCount}
 			{:else}

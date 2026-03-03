@@ -16,17 +16,20 @@ import type {
 export async function getCanvas(
   kv: KVNamespace,
 ): Promise<CanvasData | null> {
-  const [canvas, cursor] = await Promise.all([
-    kv.get("canvas:latest", "arrayBuffer"),
-    kv.get("cursor:latest", "text"),
-  ]);
+  const result = await kv.getWithMetadata<{ cursor: string }>("canvas:latest", "arrayBuffer");
 
-  if (!canvas) return null;
+  if (!result.value) return null;
 
-  return {
-    canvas,
-    cursor: cursor ? parseInt(cursor, 10) : 0,
-  };
+  // Prefer cursor from metadata (new format), fall back to legacy key
+  let cursor = 0;
+  if (result.metadata?.cursor) {
+    cursor = parseInt(result.metadata.cursor, 10);
+  } else {
+    const legacyCursor = await kv.get("cursor:latest", "text");
+    if (legacyCursor) cursor = parseInt(legacyCursor, 10);
+  }
+
+  return { canvas: result.value, cursor };
 }
 
 /** Who placed a specific pixel and when. */
@@ -95,20 +98,28 @@ export async function getStats(
   canvasWidth: number = 1000,
   canvasHeight: number = 1000,
 ): Promise<StatsInfo> {
-  const [dbStats, cursorData] = await Promise.all([
+  const [dbStats, kvResult] = await Promise.all([
     db
       .prepare(
         "SELECT COUNT(*) as unique_painters, COALESCE(SUM(total_pixels), 0) as total_pixels FROM user_stats",
       )
       .first<{ unique_painters: number; total_pixels: number }>(),
-    kv.get("cursor:latest", "text"),
+    kv.getWithMetadata<{ cursor: string }>("canvas:latest"),
   ]);
+
+  let cursor: number | null = null;
+  if (kvResult.metadata?.cursor) {
+    cursor = parseInt(kvResult.metadata.cursor, 10);
+  } else {
+    const legacyCursor = await kv.get("cursor:latest", "text");
+    if (legacyCursor) cursor = parseInt(legacyCursor, 10);
+  }
 
   return {
     unique_painters: dbStats?.unique_painters ?? 0,
     total_pixels: dbStats?.total_pixels ?? 0,
     canvas_width: canvasWidth,
     canvas_height: canvasHeight,
-    cursor: cursorData ? parseInt(cursorData, 10) : null,
+    cursor,
   };
 }

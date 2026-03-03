@@ -2,15 +2,15 @@
  * Jetstream WebSocket client for real-time pixel updates.
  *
  * Connects to the AT Protocol Jetstream firehose, filters for the
- * `games.atmo.place.pixel` collection, and invokes a callback for
- * every pixel-placement commit.
+ * `games.atmo.million.pixel` collection, and invokes a callback for
+ * every pixel-placement commit (creates only).
  */
 
 const JETSTREAM_URL = 'wss://jetstream1.us-east.bsky.network/subscribe';
-const COLLECTION = 'games.atmo.place.pixel';
+const COLLECTION = 'games.atmo.million.pixel';
 const RECONNECT_MS = 3_000;
 
-export type PixelHandler = (x: number, y: number, color: number, did: string) => void;
+export type PixelHandler = (x: number, y: number, color: number, did: string, timeUs: number) => void;
 export type StatusHandler = (connected: boolean) => void;
 
 export class JetstreamClient {
@@ -38,7 +38,10 @@ export class JetstreamClient {
 
 		this.ws = new WebSocket(url);
 
-		this.ws.onopen = () => this.onStatusChange(true);
+		this.ws.onopen = () => {
+			console.log('[jetstream] connected to', url.toString());
+			this.onStatusChange(true);
+		};
 
 		this.ws.onmessage = (ev) => {
 			try {
@@ -48,15 +51,25 @@ export class JetstreamClient {
 				const c = msg.commit;
 				if (!c || c.collection !== COLLECTION) return;
 
-				const op = c.operation as string;
-				const rec = c.record;
-				if (!rec || typeof rec.x !== 'number' || typeof rec.y !== 'number') return;
+				console.log(`[jetstream] ${c.operation} by ${msg.did} collection=${c.collection}`);
 
-				const color = op === 'delete' ? 31 : (rec.color as number); // 31 = white on delete
-				this.onPixel(rec.x, rec.y, color, msg.did as string);
+				// Only handle creates — ignore deletes and updates
+				if (c.operation !== 'create') {
+					console.log(`[jetstream] skipping ${c.operation}`);
+					return;
+				}
+
+				const rec = c.record;
+				if (!rec || typeof rec.x !== 'number' || typeof rec.y !== 'number') {
+					console.log('[jetstream] invalid record', rec);
+					return;
+				}
+
+				console.log(`[jetstream] pixel (${rec.x},${rec.y}) color=${rec.color} did=${msg.did} time_us=${msg.time_us}`);
+				this.onPixel(rec.x, rec.y, rec.color as number, msg.did as string, msg.time_us as number);
 				this.cursor = msg.time_us as number;
-			} catch {
-				// ignore malformed messages
+			} catch (e) {
+				console.warn('[jetstream] malformed message', e);
 			}
 		};
 

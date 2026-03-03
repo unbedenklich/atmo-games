@@ -1,11 +1,13 @@
 import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
+import { DEV_PORT } from './src/lib/atproto/port';
 
 export default defineConfig({
 	plugins: [sveltekit(), tailwindcss()],
 	server: {
+		allowedHosts: ['mild-habitat-perceived-invoice.trycloudflare.com'],
 		host: '127.0.0.1',
-		port: 5183
+		port: DEV_PORT
 	}
 });

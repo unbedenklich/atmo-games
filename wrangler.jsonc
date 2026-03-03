@@ -8,6 +8,15 @@
 	// },
 	"kv_namespaces": [
 		{ "binding": "OAUTH_SESSIONS", "id": "TODO" },
-		{ "binding": "OAUTH_STATES", "id": "TODO" }
+		{ "binding": "OAUTH_STATES", "id": "TODO" },
+		{ "binding": "PLACE_KV", "id": "674d6600a117415dbed27cab871b8375", "remote": true }
+	],
+	"d1_databases": [
+		{
+			"binding": "PLACE_DB",
+			"database_name": "atplace-db",
+			"database_id": "7f19a034-c694-49ad-a14e-9fc71f04c29e",
+			"remote": true
+		}
 	]
 }

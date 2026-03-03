@@ -85,16 +85,16 @@
 </script>
 
 <div class="flex min-h-svh flex-col items-center justify-center p-4">
-	<h1 class="mb-6 text-2xl font-bold text-stone-800 dark:text-stone-200">Submit Puzzle</h1>
+	<h1 class="mb-6 text-2xl font-bold text-base-800 dark:text-base-200">Submit Puzzle</h1>
 
 	{#if !user.isLoggedIn}
-		<div class="flex flex-col items-center gap-6 rounded-2xl bg-stone-100 p-8 dark:bg-stone-800">
-			<p class="text-lg font-medium text-stone-700 dark:text-stone-300">Sign in with your Bluesky account to submit puzzles</p>
+		<div class="flex flex-col items-center gap-6 rounded-2xl bg-base-100 p-8 dark:bg-base-800">
+			<p class="text-lg font-medium text-base-700 dark:text-base-300">Sign in with your Bluesky account to submit puzzles</p>
 			<Button onclick={() => atProtoLoginModalState.show()}>Sign In</Button>
 		</div>
 	{:else}
 		<div class="w-full max-w-lg">
-			<label for="puzzle-json" class="mb-2 block text-sm font-medium text-stone-700 dark:text-stone-300">
+			<label for="puzzle-json" class="mb-2 block text-sm font-medium text-base-700 dark:text-base-300">
 				Puzzle JSON
 			</label>
 			<Textarea
