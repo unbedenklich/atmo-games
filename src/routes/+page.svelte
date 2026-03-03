@@ -17,6 +17,14 @@
 		</a>
 
 		<a
+			href="/million/"
+			class="block border dark:border-base-800 rounded-xl bg-stone-100 dark:bg-stone-950/50 p-6 text-center transition-colors hover:bg-stone-200 dark:hover:bg-stone-950/40 inset-shadow-sm dark:inset-shadow-black/30"
+		>
+			<span class="block text-xl font-bold text-stone-900 dark:text-stone-100">Million</span>
+			<span class="block mt-1 text-sm text-stone-500 dark:text-stone-400">Collaborative pixel canvas</span>
+		</a>
+
+		<a
 			href="/fours/submit"
 			class="block rounded-xl border border-stone-300 dark:border-stone-600 p-4 text-center text-stone-700 dark:text-stone-300 transition-colors hover:bg-stone-100 dark:hover:bg-stone-800"
 		>
