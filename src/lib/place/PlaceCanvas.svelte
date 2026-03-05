@@ -41,6 +41,8 @@
 
 	// Client-side cooldown cache per DID
 	const cooldownCache = new Map<string, { last_paint_at: number; whitelisted: boolean; blocked: boolean }>();
+	const recentPainters = new Set<string>();
+	let cooldownRefreshInterval: ReturnType<typeof setInterval>;
 
 	// Pixel ownership from Jetstream events: "x,y" → did
 	const pixelOwners = new Map<string, string>();
@@ -651,17 +653,43 @@
 
 		// Restore cooldown from localStorage and seed cache
 		if (user.did) {
-			try {
-				const saved = localStorage.getItem('million:last_paint');
-				if (saved) {
-					const lastPaintMs = parseInt(saved, 10);
-					if (lastPaintMs > 0) {
-						cooldownCache.set(user.did, { last_paint_at: lastPaintMs * 1000, whitelisted: false, blocked: false });
-						startCooldownFrom(lastPaintMs * 1000);
+			// Fetch server-side cooldown info first, then overlay localStorage timing
+			const { getCooldownInfo } = await import('./pixel.remote');
+			const serverInfo = await getCooldownInfo({ did: user.did });
+			cooldownCache.set(user.did, serverInfo);
+
+			if (!serverInfo.whitelisted) {
+				try {
+					const saved = localStorage.getItem('million:last_paint');
+					if (saved) {
+						const lastPaintMs = parseInt(saved, 10);
+						if (lastPaintMs > 0) {
+							cooldownCache.set(user.did, { ...serverInfo, last_paint_at: lastPaintMs * 1000 });
+							startCooldownFrom(lastPaintMs * 1000);
+						}
 					}
+				} catch {}
+			}
+		}
+
+		// Periodically refresh cooldown info for users who painted recently
+		cooldownRefreshInterval = setInterval(async () => {
+			const dids = [...recentPainters];
+			recentPainters.clear();
+			if (dids.length === 0) return;
+			try {
+				const { getCooldownInfo } = await import('./pixel.remote');
+				for (const did of dids) {
+					const fresh = await getCooldownInfo({ did });
+					const cached = cooldownCache.get(did);
+					cooldownCache.set(did, {
+						last_paint_at: cached?.last_paint_at ?? fresh.last_paint_at,
+						whitelisted: fresh.whitelisted,
+						blocked: fresh.blocked,
+					});
 				}
 			} catch {}
-		}
+		}, 60_000);
 
 		// Start Jetstream from 2 minutes ago to cover any gap since the canvas was last baked
 		const cursor = (Date.now() - 2 * 60 * 1000) * 1000;
@@ -673,12 +701,13 @@
 			}
 			const lastUs = cached?.last_paint_at ?? 0;
 			const elapsedMs = Math.floor((timeUs - lastUs) / 1000);
-			if (lastUs > 0 && elapsedMs >= 0 && elapsedMs < COOLDOWN_MS_INGEST) {
+			if (!cached?.whitelisted && lastUs > 0 && elapsedMs >= 0 && elapsedMs < COOLDOWN_MS_INGEST) {
 				console.log(`[jetstream] rate-limited (${x},${y}) color=${c} did=${did} elapsed=${elapsedMs}ms`);
 				return;
 			}
 			console.log(`[jetstream] accepted (${x},${y}) color=${c} did=${did}${cached ? ` elapsed=${elapsedMs}ms` : ' first-seen'} time_us=${timeUs}`);
 			cooldownCache.set(did, { last_paint_at: timeUs, whitelisted: cached?.whitelisted ?? false, blocked: false });
+			recentPainters.add(did);
 			pixelOwners.set(`${x},${y}`, did);
 			setPixel(x, y, c);
 
@@ -703,6 +732,7 @@
 		destroyHaptics();
 		jetstream?.disconnect();
 		resizeObs?.disconnect();
+		if (cooldownRefreshInterval) clearInterval(cooldownRefreshInterval);
 		if (cooldownInterval) clearInterval(cooldownInterval);
 		if (rafId) cancelAnimationFrame(rafId);
 		if (typeof window !== 'undefined') {
