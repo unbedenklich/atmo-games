@@ -41,6 +41,7 @@
 
 	// Client-side cooldown cache per DID
 	const cooldownCache = new Map<string, { last_paint_at: number; whitelisted: boolean; blocked: boolean }>();
+	const verifiedDids = new Set<string>();
 	const recentPainters = new Set<string>();
 	let cooldownRefreshInterval: ReturnType<typeof setInterval>;
 
@@ -671,6 +672,7 @@
 						whitelisted: serverInfo.whitelisted,
 						blocked: serverInfo.blocked,
 					});
+					verifiedDids.add(initDid);
 
 					if (!serverInfo.whitelisted) {
 						startCooldownFrom(lastPaintAt);
@@ -706,6 +708,7 @@
 						whitelisted: fresh.whitelisted,
 						blocked: fresh.blocked,
 					});
+					verifiedDids.add(did);
 				}
 			} catch {}
 		}, 60_000);
@@ -720,7 +723,7 @@
 			}
 			const lastUs = cached?.last_paint_at ?? 0;
 			const elapsedMs = Math.floor((timeUs - lastUs) / 1000);
-			if (cached && !cached.whitelisted && lastUs > 0 && elapsedMs >= 0 && elapsedMs < COOLDOWN_MS_INGEST) {
+			if (verifiedDids.has(did) && !cached?.whitelisted && lastUs > 0 && elapsedMs >= 0 && elapsedMs < COOLDOWN_MS_INGEST) {
 				console.log(`[jetstream] rate-limited (${x},${y}) color=${c} did=${did} elapsed=${elapsedMs}ms`);
 				return;
 			}
