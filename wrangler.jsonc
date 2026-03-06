@@ -1,13 +1,26 @@
 {
 	"name": "atmo-games",
+	"main": ".svelte-kit/cloudflare/_worker.js",
 	"compatibility_date": "2025-12-25",
 	"compatibility_flags": ["nodejs_compat_v2"],
+	"assets": {
+		"binding": "ASSETS",
+		"directory": ".svelte-kit/cloudflare"
+	},
 	// Set OAUTH_PUBLIC_URL to your production domain when deploying
-	// "vars": {
-	// 	"OAUTH_PUBLIC_URL": "https://your-domain.com"
-	// },
+	"vars": {
+		"OAUTH_PUBLIC_URL": "https://atmo.games"
+	},
 	"kv_namespaces": [
-		{ "binding": "OAUTH_SESSIONS", "id": "TODO" },
-		{ "binding": "OAUTH_STATES", "id": "TODO" }
+		{ "binding": "OAUTH_SESSIONS", "id": "2cbd49677f7c40cc8659586681a31d6e" },
+		{ "binding": "OAUTH_STATES", "id": "dcaeea11d9ba4562ab891b4409c3abb0" },
+		{ "binding": "PLACE_KV", "id": "674d6600a117415dbed27cab871b8375" }
+	],
+	"d1_databases": [
+		{
+			"binding": "PLACE_DB",
+			"database_name": "atplace-db",
+			"database_id": "7f19a034-c694-49ad-a14e-9fc71f04c29e"
+		}
 	]
 }

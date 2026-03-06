@@ -2,6 +2,12 @@ import type { Cookies } from '@sveltejs/kit';
 import { Client } from '@atcute/client';
 import type { Did } from '@atcute/lexicons';
 import type { OAuthSession } from '@atcute/oauth-node-client';
+import {
+	TokenInvalidError,
+	TokenRevokedError,
+	TokenRefreshError,
+	AuthMethodUnsatisfiableError
+} from '@atcute/oauth-node-client';
 import { createOAuthClient } from './oauth';
 import { getSignedCookie } from './signed-cookie';
 
@@ -32,7 +38,17 @@ export async function restoreSession(
 		};
 	} catch (e) {
 		console.error('Failed to restore session:', e);
-		cookies.delete('did', { path: '/' });
+
+		const isSessionGone =
+			e instanceof TokenInvalidError ||
+			e instanceof TokenRevokedError ||
+			e instanceof TokenRefreshError ||
+			e instanceof AuthMethodUnsatisfiableError;
+
+		if (isSessionGone) {
+			cookies.delete('did', { path: '/' });
+		}
+
 		return { session: null, client: null, did: null };
 	}
 }

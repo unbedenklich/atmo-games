@@ -29,6 +29,7 @@ export async function login(handle: string) {
 
 	const { oauthLogin } = await import('./server/oauth.remote');
 	const { url } = await oauthLogin({ handle });
+	document.cookie = `redirect_after_login=${encodeURIComponent(window.location.pathname)};path=/;max-age=600;samesite=lax`;
 	window.location.assign(url);
 
 	await new Promise((_resolve, reject) => {
@@ -41,6 +42,7 @@ export async function login(handle: string) {
 export async function signup() {
 	const { oauthLogin } = await import('./server/oauth.remote');
 	const { url } = await oauthLogin({ signup: true });
+	document.cookie = `redirect_after_login=${encodeURIComponent(window.location.pathname)};path=/;max-age=600;samesite=lax`;
 	window.location.assign(url);
 
 	await new Promise((_resolve, reject) => {

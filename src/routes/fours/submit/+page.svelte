@@ -110,11 +110,11 @@
 </script>
 
 <div class="flex min-h-svh flex-col items-center justify-center p-4">
-	<h1 class="mb-6 text-2xl font-bold text-stone-800 dark:text-stone-200">Submit Puzzle</h1>
+	<h1 class="mb-6 text-2xl font-bold text-base-800 dark:text-base-200">Submit Puzzle</h1>
 
 	{#if !user.isLoggedIn}
-		<div class="flex flex-col items-center gap-6 rounded-2xl bg-stone-100 p-8 dark:bg-stone-800">
-			<p class="text-lg font-medium text-stone-700 dark:text-stone-300">
+		<div class="flex flex-col items-center gap-6 rounded-2xl bg-base-100 p-8 dark:bg-base-800">
+			<p class="text-lg font-medium text-base-700 dark:text-base-300">
 				Sign in with your Bluesky account to submit puzzles
 			</p>
 			<Button onclick={() => atProtoLoginModalState.show()}>Sign In</Button>
@@ -122,8 +122,8 @@
 	{:else}
 		<div class="w-full max-w-2xl space-y-6">
 			{#each [0, 1, 2, 3] as i (i)}
-				<div class="border-l-4 {borderColors[i]} rounded-lg bg-stone-50 p-4 dark:bg-stone-800/50">
-					<p class="mb-3 text-sm font-semibold text-stone-700 dark:text-stone-300">
+				<div class="border-l-4 {borderColors[i]} rounded-lg bg-base-50 p-4 dark:bg-base-800/50">
+					<p class="mb-3 text-sm font-semibold text-base-700 dark:text-base-300">
 						Group {i + 1} ({difficultyLabels[i]})
 					</p>
 
@@ -187,7 +187,7 @@
 				</div>
 				<a
 					href="/fours/submit/json"
-					class="text-xs text-stone-500 underline hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200"
+					class="text-xs text-base-500 underline hover:text-base-700 dark:text-base-400 dark:hover:text-base-200"
 				>
 					or paste JSON
 				</a>

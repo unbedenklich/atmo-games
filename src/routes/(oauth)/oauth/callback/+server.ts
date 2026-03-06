@@ -22,5 +22,9 @@ export const GET: RequestHandler = async ({ url, platform, cookies }) => {
 		redirect(303, '/?error=auth_failed');
 	}
 
-	redirect(303, '/fours/sync');
+	const redirectTo = cookies.get('redirect_after_login');
+	if (redirectTo) {
+		cookies.delete('redirect_after_login', { path: '/' });
+	}
+	redirect(303, redirectTo ? decodeURIComponent(redirectTo) : '/');
 };

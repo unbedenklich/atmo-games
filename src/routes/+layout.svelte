@@ -1,7 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 
-	import { ThemeToggle } from '@foxui/core';
+	import { Toaster } from '@foxui/core';
 	import { AtprotoLoginModal } from '@foxui/social';
 	import { login, signup } from '$lib/atproto';
 
@@ -10,7 +10,7 @@
 
 {@render children()}
 
-<ThemeToggle class="absolute top-4 left-4" />
+<Toaster />
 
 <AtprotoLoginModal
 	login={async (handle) => {

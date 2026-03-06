@@ -2,10 +2,10 @@ import { getMillisUntilMidnight } from './daily';
 import type { FoursGroup, FoursPuzzle, FoursScore } from './types';
 
 export const DIFFICULTY_COLORS = [
-	'bg-yellow-400 dark:bg-yellow-600 text-stone-900 dark:text-stone-100',
-	'bg-green-400 dark:bg-green-600 text-stone-900 dark:text-stone-100',
-	'bg-blue-400 dark:bg-blue-600 text-stone-900 dark:text-stone-100',
-	'bg-purple-400 dark:bg-purple-600 text-stone-900 dark:text-stone-100'
+	'bg-yellow-400 dark:bg-yellow-600 text-base-900 dark:text-base-100',
+	'bg-green-400 dark:bg-green-600 text-base-900 dark:text-base-100',
+	'bg-blue-400 dark:bg-blue-600 text-base-900 dark:text-base-100',
+	'bg-purple-400 dark:bg-purple-600 text-base-900 dark:text-base-100'
 ];
 
 function shuffle<T>(arr: T[]): T[] {
@@ -264,9 +264,9 @@ export class FoursGame {
 			return `${DIFFICULTY_COLORS[this.hintWords.get(word)!]} transition-colors duration-300`;
 		}
 		if (this.selectedWords.includes(word)) {
-			return 'bg-stone-600 text-white dark:bg-stone-300 dark:text-stone-900';
+			return 'bg-base-600 text-white dark:bg-base-300 dark:text-base-900';
 		}
-		return 'bg-stone-200 text-stone-900 dark:bg-stone-700 dark:text-stone-100';
+		return 'bg-base-200 text-base-900 dark:bg-base-700 dark:text-base-100';
 	}
 
 	tileStyle(word: string): string {

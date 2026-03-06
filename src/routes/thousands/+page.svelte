@@ -1,9 +1,11 @@
 <script lang="ts">
 	import PlaceCanvas from '$lib/place/PlaceCanvas.svelte';
+
+	let { data } = $props();
 </script>
 
 <svelte:head>
-	<title>Million</title>
+	<title>Thousands</title>
 </svelte:head>
 
-<PlaceCanvas />
+<PlaceCanvas canvas={data.canvas} cursor={data.cursor} />
