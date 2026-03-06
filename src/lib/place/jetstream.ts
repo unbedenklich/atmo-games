@@ -2,12 +2,12 @@
  * Jetstream WebSocket client for real-time pixel updates.
  *
  * Connects to the AT Protocol Jetstream firehose, filters for the
- * `games.atmo.million.pixel` collection, and invokes a callback for
+ * `games.atmo.thousands.pixel` collection, and invokes a callback for
  * every pixel-placement commit (creates only).
  */
 
 const JETSTREAM_URL = 'wss://jetstream1.us-east.bsky.network/subscribe';
-const COLLECTION = 'games.atmo.million.pixel';
+const COLLECTION = 'games.atmo.thousands.pixel';
 const RECONNECT_MS = 3_000;
 
 export type PixelHandler = (x: number, y: number, color: number, did: string, timeUs: number) => void;

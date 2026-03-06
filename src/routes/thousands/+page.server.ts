@@ -11,7 +11,7 @@ export const load: PageServerLoad = async ({ platform }) => {
 	]);
 
 	const cursor = canvasData?.cursor ?? 0;
-	console.log('[million] load cursor:', cursor);
+	console.log('[thousands] load cursor:', cursor);
 
 	return {
 		canvas: canvasData ? new Uint8Array(canvasData.canvas) : null,

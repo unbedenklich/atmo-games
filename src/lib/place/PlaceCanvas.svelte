@@ -216,7 +216,7 @@
 			if (!did) { pixelAuthorLoading = false; return; }
 			// Try to resolve handle, checking localStorage cache first
 			try {
-				const cacheKey = `million-profile-${did}`;
+				const cacheKey = `thousands-profile-${did}`;
 				const cached = localStorage.getItem(cacheKey);
 				if (cached) {
 					pixelAuthor = cached;
@@ -275,7 +275,7 @@
 		const rkey = createTID();
 		console.log('[place] publishing record', { x, y, color: c, rkey });
 		putRecord({
-			collection: 'games.atmo.million.pixel',
+			collection: 'games.atmo.thousands.pixel',
 			rkey,
 			record: { x, y, color: c }
 		}).then(() => console.log('[place] record published')).catch((e) => {
@@ -285,7 +285,7 @@
 		}).finally(() => { placing = false; });
 
 		// Persist cooldown locally so it survives page refresh
-		try { localStorage.setItem('million:last_paint', String(Date.now())); } catch {};
+		try { localStorage.setItem('thousands:last_paint', String(Date.now())); } catch {};
 	}
 
 	function confirmPlace() {
@@ -310,7 +310,7 @@
 	function saveView() {
 		if (saveViewTimer) clearTimeout(saveViewTimer);
 		saveViewTimer = setTimeout(() => {
-			try { localStorage.setItem('million:view', JSON.stringify({ ox, oy, scale })); } catch {}
+			try { localStorage.setItem('thousands:view', JSON.stringify({ ox, oy, scale })); } catch {}
 		}, 200);
 	}
 
@@ -631,7 +631,7 @@
 
 		// Restore camera position from localStorage, or center if none saved
 		try {
-			const saved = localStorage.getItem('million:view');
+			const saved = localStorage.getItem('thousands:view');
 			if (saved) {
 				const v = JSON.parse(saved);
 				scale = v.scale ?? 1;
@@ -660,7 +660,7 @@
 					// Use localStorage timing if more recent than server
 					let lastPaintAt = serverInfo.last_paint_at;
 					try {
-						const saved = localStorage.getItem('million:last_paint');
+						const saved = localStorage.getItem('thousands:last_paint');
 						if (saved) {
 							const localUs = parseInt(saved, 10) * 1000;
 							if (localUs > lastPaintAt) lastPaintAt = localUs;
@@ -681,7 +681,7 @@
 			).catch(() => {
 				// Server unreachable — fall back to localStorage with unknown whitelist status
 				try {
-					const saved = localStorage.getItem('million:last_paint');
+					const saved = localStorage.getItem('thousands:last_paint');
 					if (saved) {
 						const lastPaintMs = parseInt(saved, 10);
 						if (lastPaintMs > 0) {
@@ -736,7 +736,7 @@
 			// Start cooldown timer if this is the local user's pixel
 			if (did === user.did && !devMode) {
 				startCooldownFrom(timeUs);
-				try { localStorage.setItem('million:last_paint', String(Math.floor(timeUs / 1000))); } catch {}
+				try { localStorage.setItem('thousands:last_paint', String(Math.floor(timeUs / 1000))); } catch {}
 			}
 		});
 		jetstream.onStatusChange = (s) => (connected = s);

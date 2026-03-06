@@ -5,7 +5,7 @@
 </script>
 
 <svelte:head>
-	<title>Million</title>
+	<title>Thousands</title>
 </svelte:head>
 
 <PlaceCanvas canvas={data.canvas} cursor={data.cursor} />
