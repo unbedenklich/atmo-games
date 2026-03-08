@@ -10,7 +10,7 @@
 	// Set OAUTH_PUBLIC_URL to your production domain when deploying
 	"vars": {
 		"OAUTH_PUBLIC_URL": "https://atmo.games",
-		"USE_BSKY_LIKES": "true"
+		"USE_BSKY_LIKES": "false"
 	},
 	"kv_namespaces": [
 		{ "binding": "OAUTH_SESSIONS", "id": "2cbd49677f7c40cc8659586681a31d6e" },
