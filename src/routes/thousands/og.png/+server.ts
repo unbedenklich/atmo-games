@@ -1,7 +1,7 @@
 import { ImageResponse } from '@ethercorps/sveltekit-og';
 import ThousandsOg from '$lib/thousands/og.svelte';
 import { getCanvas } from '$lib/server/queries';
-import { canvasToPngDataUrl } from '$lib/place/png';
+import { canvasToPngDataUrl } from '$lib/thousands/png';
 import type { RequestHandler } from '@sveltejs/kit';
 
 export const GET: RequestHandler = async ({ platform }) => {
