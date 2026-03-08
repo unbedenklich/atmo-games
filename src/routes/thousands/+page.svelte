@@ -1,12 +1,12 @@
 <script lang="ts">
-	import PlaceCanvas from '$lib/place/PlaceCanvas.svelte';
+	import ThousandsCanvas from '$lib/thousands/ThousandsCanvas.svelte';
 
 	let { data } = $props();
 </script>
 
 <svelte:head>
-	<title>Thousands</title>
-	<meta property="og:title" content="Thousands" />
+	<title>1000s</title>
+	<meta property="og:title" content="1000s" />
 	<meta property="og:description" content="A collaborative pixel canvas by atmo.games" />
 	<meta property="og:image" content="/thousands/og.png" />
 	<meta property="og:image:width" content="1200" />
@@ -15,4 +15,4 @@
 	<meta name="twitter:image" content="/thousands/og.png" />
 </svelte:head>
 
-<PlaceCanvas canvas={data.canvas} cursor={data.cursor} />
+<ThousandsCanvas canvas={data.canvas} cursor={data.cursor} />

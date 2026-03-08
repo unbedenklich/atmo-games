@@ -1,5 +1,5 @@
 import { ImageResponse } from '@ethercorps/sveltekit-og';
-import ThousandsOg from '$lib/components/og/thousands.svelte';
+import ThousandsOg from '$lib/thousands/og.svelte';
 import { getCanvas } from '$lib/server/queries';
 import { canvasToPngDataUrl } from '$lib/place/png';
 import type { RequestHandler } from '@sveltejs/kit';
