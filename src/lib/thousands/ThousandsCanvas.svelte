@@ -20,14 +20,14 @@
 
 	interface Props {
 		canvas: Uint8Array | null;
-		cursor: number;
 		blocked: string[];
 		useBskyLikes: boolean;
 	}
 
-	let { canvas: initialCanvas, cursor: initialCursor, blocked: initialBlocked, useBskyLikes }: Props = $props();
+	let { canvas: initialCanvas, blocked: initialBlocked, useBskyLikes }: Props = $props();
 
 	// Block set — loaded at page load, refreshed every minute
+	// svelte-ignore state_referenced_locally
 	let blockedSet = $state(new Set(initialBlocked));
 
 	// Reactive UI state
@@ -80,10 +80,6 @@
 
 	let resizeObs: ResizeObserver;
 	let jetstream: JetstreamClient;
-
-	/* ------------------------------------------------------------------ */
-	/*  Cooldown                                                           */
-	/* ------------------------------------------------------------------ */
 
 	function canPlace(): boolean {
 		if (devMode) return true;
@@ -177,7 +173,9 @@
 	function saveView() {
 		if (saveViewTimer) clearTimeout(saveViewTimer);
 		saveViewTimer = setTimeout(() => {
-			try { localStorage.setItem('thousands:view', JSON.stringify({ ox, oy, scale })); } catch {}
+			try { localStorage.setItem('thousands:view', JSON.stringify({ ox, oy, scale })); } catch {
+				console.error('Failed to save view state');
+			}
 		}, 200);
 	}
 
@@ -507,14 +505,15 @@
 				const { getBlockList } = await import('./pixel.remote');
 				const { blocked } = await getBlockList({});
 				blockedSet = new Set(blocked);
-			} catch {}
+			} catch {
+				console.error('Failed to refresh block list');
+			}
 		}, 600_000);
 
-		// Start Jetstream from 2 minutes ago to cover any gap since the canvas was last baked
 		const cursor = (Date.now() - 2 * 60 * 1000) * 1000;
 		const collection = useBskyLikes ? 'app.bsky.feed.like' : 'games.atmo.thousands.pixel';
 		const mapRecord = useBskyLikes ? makeLikeRecordMapper(W, H, PALETTE.length) : pixelRecordMapper;
-		jetstream = new JetstreamClient(cursor, collection, (x, y, c, did, timeUs) => {
+		jetstream = new JetstreamClient(cursor, collection, (x, y, c, did) => {
 			if (blockedSet.has(did)) return;
 			setPixel(x, y, c);
 		}, mapRecord);

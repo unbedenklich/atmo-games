@@ -9,12 +9,8 @@ export const load: PageServerLoad = async ({ platform }) => {
 		kv ? kv.get('block', 'text') : null
 	]);
 
-	const cursor = canvasData?.cursor ?? 0;
-	console.log('[thousands] load cursor:', cursor);
-
 	return {
 		canvas: canvasData ? new Uint8Array(canvasData.canvas) : null,
-		cursor,
 		blocked: blockJson ? (JSON.parse(blockJson) as string[]) : [],
 		useBskyLikes: platform?.env?.USE_BSKY_LIKES === 'true'
 	};

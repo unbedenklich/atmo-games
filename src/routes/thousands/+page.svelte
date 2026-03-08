@@ -15,4 +15,4 @@
 	<meta name="twitter:image" content="/thousands/og.png" />
 </svelte:head>
 
-<ThousandsCanvas canvas={data.canvas} cursor={data.cursor} blocked={data.blocked} useBskyLikes={data.useBskyLikes} />
+<ThousandsCanvas canvas={data.canvas} blocked={data.blocked} useBskyLikes={data.useBskyLikes} />

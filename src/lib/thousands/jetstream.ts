@@ -1,90 +1,71 @@
-/**
- * Jetstream WebSocket client for real-time pixel updates.
- *
- * Connects to the AT Protocol Jetstream firehose and invokes a callback for
- * every relevant commit.
- */
+import { JetstreamSubscription } from '@atcute/jetstream';
 
-const JETSTREAM_URL = 'wss://jetstream1.us-east.bsky.network/subscribe';
-const RECONNECT_MS = 3_000;
+type PixelHandler = (x: number, y: number, color: number, did: string, timeUs: number) => void;
+type StatusHandler = (connected: boolean) => void;
+type RecordMapper = (record: unknown) => { x: number; y: number; color: number } | null;
 
-export type PixelHandler = (x: number, y: number, color: number, did: string, timeUs: number) => void;
-export type StatusHandler = (connected: boolean) => void;
-export type RecordMapper = (record: unknown) => { x: number; y: number; color: number } | null;
+const JETSTREAM_URLS = [
+	'wss://jetstream1.us-east.bsky.network',
+	'wss://jetstream2.us-east.bsky.network',
+	'wss://jetstream1.us-west.bsky.network',
+	'wss://jetstream2.us-west.bsky.network',
+];
 
 export class JetstreamClient {
-	private ws: WebSocket | null = null;
-	private cursor: number;
-	private collection: string;
-	private onPixel: PixelHandler;
-	private mapRecord: RecordMapper;
-	private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+	private iter: AsyncIterator<unknown> | null = null;
 	private destroyed = false;
+	private eventCount = 0;
+	private statsTimer: ReturnType<typeof setInterval> | null = null;
 
 	onStatusChange: StatusHandler = () => {};
 
-	constructor(cursor: number, collection: string, onPixel: PixelHandler, mapRecord: RecordMapper) {
-		this.cursor = cursor;
-		this.collection = collection;
-		this.onPixel = onPixel;
-		this.mapRecord = mapRecord;
-	}
+	constructor(
+		private cursor: number,
+		private collection: string,
+		private onPixel: PixelHandler,
+		private mapRecord: RecordMapper
+	) {}
 
 	connect() {
 		if (this.destroyed) return;
 
-		const url = new URL(JETSTREAM_URL);
-		url.searchParams.set('wantedCollections', this.collection);
-		if (this.cursor > 0) {
-			url.searchParams.set('cursor', this.cursor.toString());
+		const subscription = new JetstreamSubscription({
+			url: JETSTREAM_URLS,
+			wantedCollections: [this.collection],
+			cursor: this.cursor,
+			onConnectionOpen: () => this.onStatusChange(true),
+			onConnectionClose: () => this.onStatusChange(false),
+		});
+
+		this.iter = subscription[Symbol.asyncIterator]();
+		this.statsTimer = setInterval(() => {
+			console.log(`[jetstream] ${(this.eventCount / 10).toFixed(1)} events/s`);
+			this.eventCount = 0;
+		}, 10_000);
+		this.run(this.iter);
+	}
+
+	private async run(iter: AsyncIterator<unknown>) {
+		while (!this.destroyed) {
+			const { value: event, done } = await iter.next();
+			if (done || this.destroyed) break;
+
+			const e = event as { kind: string; commit?: { operation: string; record: unknown }; did: string; time_us: number };
+			if (e.kind !== 'commit' || e.commit?.operation !== 'create') continue;
+
+			const pixel = this.mapRecord(e.commit.record);
+			if (!pixel) continue;
+
+			this.eventCount++;
+			this.onPixel(pixel.x, pixel.y, pixel.color, e.did, e.time_us);
 		}
-
-		this.ws = new WebSocket(url);
-
-		this.ws.onopen = () => {
-			console.log('[jetstream] connected to', url.toString());
-			this.onStatusChange(true);
-		};
-
-		this.ws.onmessage = (ev) => {
-			try {
-				const msg = JSON.parse(ev.data as string);
-				if (msg.kind !== 'commit') return;
-
-				const c = msg.commit;
-				if (!c || c.collection !== this.collection) return;
-				if (c.operation !== 'create') return;
-
-				const pixel = this.mapRecord(c.record);
-				if (!pixel) return;
-
-				this.onPixel(pixel.x, pixel.y, pixel.color, msg.did as string, msg.time_us as number);
-				this.cursor = msg.time_us as number;
-			} catch (e) {
-				console.warn('[jetstream] malformed message', e);
-			}
-		};
-
-		this.ws.onclose = () => {
-			this.onStatusChange(false);
-			this.scheduleReconnect();
-		};
-
-		this.ws.onerror = () => {
-			this.ws?.close();
-		};
 	}
 
 	disconnect() {
 		this.destroyed = true;
-		if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
-		this.ws?.close();
-		this.ws = null;
-	}
-
-	private scheduleReconnect() {
-		if (this.destroyed) return;
-		this.reconnectTimer = setTimeout(() => this.connect(), RECONNECT_MS);
+		if (this.statsTimer) clearInterval(this.statsTimer);
+		this.iter?.return?.();
+		this.iter = null;
 	}
 }
 
@@ -107,11 +88,10 @@ function hashStr(s: string): number {
 
 export function makeLikeRecordMapper(width: number, height: number, paletteSize: number): RecordMapper {
 	return (record: unknown) => {
-		const uri = (record as Record<string, unknown>)?.subject as Record<string, unknown>;
-		const uriStr = uri?.uri;
-		if (typeof uriStr !== 'string') return null;
-		const h1 = hashStr(uriStr);
-		const h2 = hashStr(uriStr + '\x00');
+		const uri = ((record as Record<string, unknown>)?.subject as Record<string, unknown>)?.uri;
+		if (typeof uri !== 'string') return null;
+		const h1 = hashStr(uri);
+		const h2 = hashStr(uri + '\x00');
 		return { x: h1 % width, y: h2 % height, color: (h1 ^ (h2 >>> 8)) % paletteSize };
 	};
 }

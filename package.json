@@ -54,6 +54,7 @@
 	},
 	"license": "MIT",
 	"dependencies": {
+		"@atcute/jetstream": "^1.1.2",
 		"@ethercorps/sveltekit-og": "^4.2.1",
 		"@foxui/core": "^0.4.7",
 		"@foxui/social": "^0.5.1",
