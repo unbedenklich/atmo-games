@@ -7,6 +7,7 @@
 	import { toast } from '@foxui/core';
 	import { createWebHaptics } from 'web-haptics/svelte';
 	import { resolve } from '$app/paths';
+	import { SvelteSet } from 'svelte/reactivity';
 
 	const { trigger: haptic, destroy: destroyHaptics } = createWebHaptics();
 
@@ -134,7 +135,7 @@
 
 	let placing = false;
 	let rateLimitedUntil = $state(0);
-	let rateLimitShown = new Set<string>(); // which warning thresholds have been toasted this session
+	let rateLimitShown = new SvelteSet<string>(); // which warning thresholds have been toasted this session
 
 	function checkRateLimit(rateLimit: { limit: number; remaining: number; reset: number } | null) {
 		if (!rateLimit) return;
@@ -649,6 +650,19 @@
 	>
 		&larr; back
 	</a>
+
+	<!-- Download button -->
+	<button
+		onclick={() => {
+			const a = document.createElement('a');
+			a.href = offCanvas.toDataURL('image/png');
+			a.download = '1000s.png';
+			a.click();
+		}}
+		class="absolute right-2 top-2 rounded-lg bg-black/60 px-3 py-1.5 text-xs text-white backdrop-blur-sm transition-colors hover:bg-black/80 sm:right-4 sm:top-4 sm:text-sm"
+	>
+		&#8595; download
+	</button>
 
 	{#if devMode}
 		<div class="absolute left-2 top-12 flex items-center gap-1.5 sm:left-4 sm:top-14">

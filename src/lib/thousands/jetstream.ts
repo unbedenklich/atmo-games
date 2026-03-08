@@ -56,6 +56,11 @@ export class JetstreamClient {
 			const pixel = this.mapRecord(e.commit.record);
 			if (!pixel) continue;
 
+			if (!Number.isInteger(pixel.x) || !Number.isInteger(pixel.y) || !Number.isInteger(pixel.color)) {
+				console.warn('[jetstream] non-integer pixel from mapper:', pixel, 'record:', e.commit.record);
+				continue;
+			}
+
 			this.eventCount++;
 			this.onPixel(pixel.x, pixel.y, pixel.color, e.did, e.time_us);
 		}
@@ -92,6 +97,6 @@ export function makeLikeRecordMapper(width: number, height: number, paletteSize:
 		if (typeof uri !== 'string') return null;
 		const h1 = hashStr(uri);
 		const h2 = hashStr(uri + '\x00');
-		return { x: h1 % width, y: h2 % height, color: (h1 ^ (h2 >>> 8)) % paletteSize };
+		return { x: h1 % width, y: h2 % height, color: ((h1 ^ (h2 >>> 8)) >>> 0) % paletteSize };
 	};
 }

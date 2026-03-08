@@ -1,13 +1,9 @@
-<script>
-	let { canvasDataUrl } = $props();
-</script>
-
 <div
 	style="width: 1200px; height: 630px; background: #0f0f0f; display: flex; flex-direction: row; align-items: center; padding: 48px 48px 48px 0px; gap: 64px; color: transparent;"
 >
 	.
 	<img
-		src={canvasDataUrl}
+		src={"https://atplace-backend.flobit-dev.workers.dev/canvas.png"}
 		style="width: 534px; height: 534px; border-radius: 20px; flex-shrink: 0;"
 		alt=""
 	/>
