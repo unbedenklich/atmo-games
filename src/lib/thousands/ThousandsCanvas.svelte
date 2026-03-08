@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { PALETTE, PALETTE_RGB, PALETTE_NAMES } from './palette';
-	import { JetstreamClient } from './jetstream';
+	import { JetstreamClient, pixelRecordMapper, makeLikeRecordMapper } from './jetstream';
 	import { user, putRecord, createTID } from '$lib/atproto';
 	import { atProtoLoginModalState } from '@foxui/social';
 	import { toast } from '@foxui/core';
@@ -512,10 +512,12 @@
 
 		// Start Jetstream from 2 minutes ago to cover any gap since the canvas was last baked
 		const cursor = (Date.now() - 2 * 60 * 1000) * 1000;
-		jetstream = new JetstreamClient(cursor, (x, y, c, did, timeUs) => {
+		const collection = useBskyLikes ? 'app.bsky.feed.like' : 'games.atmo.thousands.pixel';
+		const mapRecord = useBskyLikes ? makeLikeRecordMapper(W, H, PALETTE.length) : pixelRecordMapper;
+		jetstream = new JetstreamClient(cursor, collection, (x, y, c, did, timeUs) => {
 			if (blockedSet.has(did)) return;
 			setPixel(x, y, c);
-		});
+		}, mapRecord);
 		jetstream.onStatusChange = (s) => (connected = s);
 		jetstream.connect();
 
