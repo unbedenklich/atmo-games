@@ -191,14 +191,14 @@
 
 		const rkey = createTID();
 		putRecord({
-			collection: 'games.atmo.thousands.pixel',
+			collection: 'games.atmo.millions.main.pixel',
 			rkey,
 			record: { x, y, color: c }
 		}).then((result) => {
 			if (!result.ok && result.rateLimited) {
 				setPixel(x, y, prevColor);
 				rateLimitedUntil = result.resetAt;
-				localStorage.setItem('thousands:ratelimit', String(result.resetAt));
+				localStorage.setItem('millions:ratelimit', String(result.resetAt));
 				const mins = Math.ceil((result.resetAt - Date.now() / 1000) / 60);
 				toast.error(`Rate limited — resets in ${mins} minute${mins === 1 ? '' : 's'}`);
 			} else if (result.ok) {
@@ -219,7 +219,7 @@
 	function saveView() {
 		if (saveViewTimer) clearTimeout(saveViewTimer);
 		saveViewTimer = setTimeout(() => {
-			try { localStorage.setItem('thousands:view', JSON.stringify({ ox, oy, scale })); } catch {
+			try { localStorage.setItem('millions:view', JSON.stringify({ ox, oy, scale })); } catch {
 				console.error('Failed to save view state');
 			}
 		}, 200);
@@ -524,7 +524,7 @@
 
 		// Restore camera position from localStorage, or center if none saved
 		try {
-			const saved = localStorage.getItem('thousands:view');
+			const saved = localStorage.getItem('millions:view');
 			if (saved) {
 				const v = JSON.parse(saved);
 				scale = v.scale ?? 1;
@@ -543,7 +543,7 @@
 		}
 		rebuildImage();
 		scheduleRender();
-		rateLimitedUntil = parseInt(localStorage.getItem('thousands:ratelimit') ?? '0', 10);
+		rateLimitedUntil = parseInt(localStorage.getItem('millions:ratelimit') ?? '0', 10);
 		loaded = true;
 
 		// Refresh block list every minute
@@ -558,7 +558,7 @@
 		}, 600_000);
 
 		const cursor = (Date.now() - 2 * 60 * 1000) * 1000;
-		const collection = useBskyLikes ? 'app.bsky.feed.like' : 'games.atmo.thousands.pixel';
+		const collection = useBskyLikes ? 'app.bsky.feed.like' : 'games.atmo.millions.main.pixel';
 		const mapRecord = useBskyLikes ? makeLikeRecordMapper(W, H, PALETTE.length) : pixelRecordMapper;
 		jetstream = new JetstreamClient(cursor, collection, (x, y, c, did) => {
 			if (blockedSet.has(did)) return;

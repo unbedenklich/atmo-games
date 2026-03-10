@@ -1,9 +1,9 @@
 import { ImageResponse } from '@ethercorps/sveltekit-og';
-import ThousandsOg from '$lib/thousands/og.svelte';
+import MillionsOg from '$lib/millions/og.svelte';
 import type { RequestHandler } from '@sveltejs/kit';
 
 export const GET: RequestHandler = async () => {
-	return new ImageResponse(ThousandsOg, {
+	return new ImageResponse(MillionsOg, {
 		width: 1200,
 		height: 630,
 		headers: {

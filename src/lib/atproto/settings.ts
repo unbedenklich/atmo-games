@@ -7,7 +7,7 @@ type Permissions = {
 };
 
 export const permissions = {
-	collections: ['games.atmo.fours.puzzle', 'games.atmo.fours.score', 'games.atmo.fours.puzzleList', 'games.atmo.thousands.pixel'],
+	collections: ['games.atmo.fours.puzzle', 'games.atmo.fours.score', 'games.atmo.fours.puzzleList', 'games.atmo.millions.main.pixel'],
 	rpc: {},
 	blobs: []
 } as const satisfies Permissions;

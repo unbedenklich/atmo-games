@@ -17,10 +17,10 @@
 		</a> -->
 
 		<a
-			href="/thousands/"
+			href="/millions/"
 			class="dark:border-base-800 bg-base-200 block border-base-400/50 rounded-xl border p-6 text-center inset-shadow-sm transition-colors hover:bg-base-200 dark:bg-base-950/50 dark:inset-shadow-black/30 dark:hover:bg-base-950/40"
 		>
-			<span class="block text-xl font-bold text-base-900 dark:text-base-100">Thousands</span>
+			<span class="block text-xl font-bold text-base-900 dark:text-base-100">Millions</span>
 			<span class="mt-1 block text-sm text-base-500 dark:text-base-400"
 				>Collaborative pixel canvas</span
 			>
