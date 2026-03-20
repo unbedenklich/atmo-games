@@ -8,8 +8,8 @@
 
 	const KEYBOARD_ROWS = [
 		['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
-		['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
-		['ENTER', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '⌫']
+		['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', '⌫'],
+		['Z', 'X', 'C', 'V', 'B', 'N', 'M', 'ENTER']
 	];
 
 	const {
@@ -29,13 +29,62 @@
 
 	// svelte-ignore state_referenced_locally
 	let hasNotifiedEnd = $state(!!score);
+	let showEndScreen = $state(!!score);
+	let copied = $state(false);
 
 	let revealedCols: boolean[] = $state([false, false, false, false, false]);
+
+	// Stats from localStorage
+	function loadStats() {
+		try {
+			const saved = localStorage.getItem('fives-stats');
+			if (saved) return JSON.parse(saved);
+		} catch {}
+		return { played: 0, won: 0, streak: 0, maxStreak: 0, guessDistribution: [0, 0, 0, 0, 0, 0] };
+	}
+
+	function saveStats(stats: ReturnType<typeof loadStats>) {
+		localStorage.setItem('fives-stats', JSON.stringify(stats));
+	}
+
+	let stats = $state(loadStats());
+
+	function generateShareText(): string {
+		const rows = game.guessResults.map((g) =>
+			g.results.map((r) => (r === 'correct' ? '🟩' : r === 'present' ? '🟨' : '⬛')).join('')
+		);
+		const result = game.gameState === 'won' ? `${game.guessResults.length}/6` : 'X/6';
+		return `Fives ${result}\n\n${rows.join('\n')}`;
+	}
+
+	async function shareResult() {
+		const text = generateShareText();
+		try {
+			await navigator.clipboard.writeText(text);
+			copied = true;
+			setTimeout(() => (copied = false), 2000);
+		} catch {}
+	}
 
 	$effect(() => {
 		if (game.gameState !== 'playing' && !hasNotifiedEnd) {
 			hasNotifiedEnd = true;
 			onGameEnd?.(game.score);
+
+			// Update stats
+			stats.played++;
+			if (game.gameState === 'won') {
+				stats.won++;
+				stats.streak++;
+				stats.guessDistribution[game.guessResults.length - 1]++;
+			} else {
+				stats.streak = 0;
+			}
+			stats.maxStreak = Math.max(stats.maxStreak, stats.streak);
+			saveStats(stats);
+
+			// Show end screen after a short delay
+			setTimeout(() => (showEndScreen = true), 500);
 		}
 	});
 
@@ -151,30 +200,99 @@
 	</div>
 
 	<!-- Keyboard -->
-	<div class="flex w-full max-w-[500px] flex-col items-center gap-[6px] px-1">
-		{#each KEYBOARD_ROWS as row, rowIdx (rowIdx)}
-			<div class="flex w-full justify-center gap-[6px]">
-				{#each row as key (key)}
-					<button
-						class="flex h-[58px] cursor-pointer items-center justify-center rounded-md font-bold
-							{key === 'ENTER' || key === '⌫' ? 'min-w-[65px] px-2 text-xs' : 'min-w-[44px] text-sm'}
-							{keyColorClass(key)}"
-						onclick={() => {
-							if (key === 'ENTER') {
-								game.submitGuess();
-							} else if (key === '⌫') {
-								game.removeLetter();
-							} else {
-								game.addLetter(key);
-							}
-						}}
-					>
-						{key}
-					</button>
-				{/each}
+	{#if !showEndScreen}
+		<div class="flex w-full max-w-[500px] flex-col items-center gap-[6px] px-1">
+			{#each KEYBOARD_ROWS as row, rowIdx (rowIdx)}
+				<div class="flex w-full justify-center gap-[6px]">
+					{#each row as key (key)}
+						<button
+							class="flex h-[58px] cursor-pointer items-center justify-center rounded-md font-bold
+								{key === 'ENTER' ? 'min-w-[100px] px-3 text-base bg-base-800 text-base-100 dark:bg-base-200 dark:text-base-800' : key === '⌫' ? 'min-w-[50px] px-2 text-lg ' + keyColorClass(key) : 'min-w-[44px] text-lg ' + keyColorClass(key)}"
+							onclick={() => {
+								if (key === 'ENTER') {
+									game.submitGuess();
+								} else if (key === '⌫') {
+									game.removeLetter();
+								} else {
+									game.addLetter(key);
+								}
+							}}
+						>
+							{key}
+						</button>
+					{/each}
+				</div>
+			{/each}
+		</div>
+	{/if}
+
+	<!-- End Screen -->
+	{#if showEndScreen}
+		<div
+			class="mt-4 flex w-full max-w-[350px] flex-col items-center gap-6 rounded-2xl bg-base-100 p-6 dark:bg-base-800"
+			transition:fade={{ duration: 300 }}
+		>
+			<h2 class="text-2xl font-bold text-base-900 dark:text-base-100">
+				{game.gameState === 'won' ? 'Nice!' : 'Better luck next time'}
+			</h2>
+
+			<p class="text-lg font-semibold text-base-600 dark:text-base-400">
+				The word was <span class="font-black text-base-900 dark:text-base-100">{answer}</span>
+			</p>
+
+			<!-- Stats -->
+			<div class="grid w-full grid-cols-4 gap-3 text-center">
+				<div>
+					<p class="text-2xl font-black text-base-900 dark:text-base-100">{stats.played}</p>
+					<p class="text-xs text-base-500 dark:text-base-400">Played</p>
+				</div>
+				<div>
+					<p class="text-2xl font-black text-base-900 dark:text-base-100">
+						{stats.played > 0 ? Math.round((stats.won / stats.played) * 100) : 0}%
+					</p>
+					<p class="text-xs text-base-500 dark:text-base-400">Win %</p>
+				</div>
+				<div>
+					<p class="text-2xl font-black text-base-900 dark:text-base-100">{stats.streak}</p>
+					<p class="text-xs text-base-500 dark:text-base-400">Streak</p>
+				</div>
+				<div>
+					<p class="text-2xl font-black text-base-900 dark:text-base-100">{stats.maxStreak}</p>
+					<p class="text-xs text-base-500 dark:text-base-400">Best</p>
+				</div>
 			</div>
-		{/each}
-	</div>
+
+			<!-- Guess Distribution -->
+			<div class="w-full">
+				<p class="mb-2 text-sm font-semibold text-base-600 dark:text-base-400">Guess Distribution</p>
+				<div class="flex flex-col gap-1">
+					{#each stats.guessDistribution as count, i (i)}
+						{@const maxCount = Math.max(...stats.guessDistribution, 1)}
+						<div class="flex items-center gap-2">
+							<span class="w-3 text-xs font-bold text-base-500 dark:text-base-400">{i + 1}</span>
+							<div
+								class="flex h-5 items-center justify-end rounded-sm px-1.5 text-xs font-bold text-white
+									{game.gameState === 'won' && game.guessResults.length === i + 1
+										? 'bg-green-600'
+										: 'bg-base-500 dark:bg-base-600'}"
+								style="width: {Math.max((count / maxCount) * 100, 8)}%"
+							>
+								{count}
+							</div>
+						</div>
+					{/each}
+				</div>
+			</div>
+
+			<!-- Share -->
+			<button
+				onclick={shareResult}
+				class="w-full rounded-lg bg-green-600 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-green-500"
+			>
+				{copied ? 'Copied!' : 'Share'}
+			</button>
+		</div>
+	{/if}
 </div>
 
 <style>
